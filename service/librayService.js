@@ -13,7 +13,7 @@ class librayService {
     }) 
     return addedTracks.map(item => item.Track.id); // возвращаем массив id
   }
-  async allTrack(part = 1, userId) {
+  async allTrack(part, userId) {
     const limit = 10;
     const offset = (part - 1) * limit;
     const tracks = await Track.findAll({
@@ -30,6 +30,10 @@ class librayService {
         {
           model: Album,       
           attributes: ['id','img'],
+          include: {
+            model: User,
+            attributes: ['id','nickname'],
+          }
         },
         {
           model: LibrayTrack,
@@ -69,7 +73,8 @@ class librayService {
     return deleteTrack;  
   }
 
-  async allPlaylist(limit = 10, part = 1, userId) {
+  async allPlaylist(part, userId) {
+    const limit = 10;
     const offset = (part - 1) * limit;
     const tracks = await Playlist.findAll({
       attributes: ['id','title','img'],
@@ -115,7 +120,20 @@ class librayService {
     return deletePlaylist;  
   }
 
-  async allAlbum(limit = 10, part = 1, userId) {
+
+  async addedAlbums(userId) {
+    const addedTracks = await LibrayAlbum.findAll({
+      where: {userId: userId},
+      include:{
+        model: Album,
+        attributes: ['id']
+      },
+      attributes: []
+    }) 
+    return addedTracks.map(item => item.Album.id); // возвращаем массив id
+  }
+  async allAlbum(part, userId) {
+    const limit = 10;
     const offset = (part - 1) * limit;
     const albums = await Album.findAll({
       attributes: [
@@ -124,7 +142,26 @@ class librayService {
         'img',
         [sequelize.literal('(SELECT COUNT(*) FROM Auditions JOIN Tracks ON Auditions.TrackId = Tracks.id WHERE Tracks.AlbumId = Album.id)'), 'auditions']
       ],
-      include: [      
+      include: [ 
+        {
+          model: Track,
+          attributes: [
+            'id',
+            'title',
+            'audio',
+          ],
+          include: [      
+            {
+              model: Coauthor,      
+              as: "CoauthorAlias",       
+              attributes: ['id'],        
+              include: {               
+                model: User,                
+                attributes: ['id','nickname'],
+              }  
+            },     
+          ],
+        },    
         {
           model: LibrayAlbum,
           where: {UserId:userId},

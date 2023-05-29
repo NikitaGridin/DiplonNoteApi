@@ -71,71 +71,29 @@ class albumService {
      return album;
     }
     
-  async add(body, files, next) {
-    try{
-    const {title,type,userId,genres,coauthors} = body;
-    
-    if(!title || !type || !userId || !files.img || !files.audio, !genres){
-      throw Object.assign(new Error("Пожалуйста, заполните все поля!"), { statusCode: 400 });
-    }
-
-    const newAlbum = await Album.create({
-      title,
-      img: files.img[0].filename,
-      status: "awaiting publication",
-      userId,
-      type
-    });
-
-    const albumGenres = genres.map(genreId => ({
-      albumId: newAlbum.id,
-      genreId
-    }));
-    
-    const tracks = files.audio.map(audio => ({
-      title: audio.originalname,
-      audio: audio.path,
-      albumId: newAlbum.id
-    }));
-    
-    const result = await Track.bulkCreate(tracks, {
-      returning: true  
-    });
-
-    const userTracks = [];
-    
-    for (let i = 0; i < tracks.length; i++) {
-      const trackId = result[i].id;
-      const coauthorsArray = coauthors[i].split(',').map(coauthor => coauthor.trim());
-    
-      if(coauthorsArray.length > 0) { 
-        for(let j = 0; j < coauthorsArray.length; j++) {
-          const userTrack = {
-            user_confirm: 1,
-            userId: coauthorsArray[j],
-            trackId: trackId
-          };      
-          userTracks.push(userTrack);
-        }
-      } else {
-        const userTrack = {
-          user_confirm: 1,
-          userId: coauthors[i],
-          trackId: trackId 
-        };
-        userTracks.push(userTrack);
+    async add (body, files)  {  
+        const { title, type, genres, userId, coauthors,titleTrack } = body;
+        // Создаем альбом
+        const album = await Album.create({
+          title,
+          type, 
+          status: 1,
+          UserId:userId,
+          img: files.img[0].path
+        });
+        
+              
+      // Создаем треки
+      const tracks = [];
+      for (let i = 0; i < files.audio.length; i++) {
+        const audioPath = files.audio[i].path;
+        const title = titleTrack[i];
+        const track = await Track.create({ title, audio: audioPath, AlbumId: album.id });
+        tracks.push(track);
       }
+  
+      return "Good";
     }
-
-    await AlbumGenre.bulkCreate(albumGenres);
-    await Coauthor.bulkCreate(userTracks);
-    
-    return {body, files};
-  }
-    catch (error) {
-      throw error;
-    } 
-  }
 
   async update(body, id, img) {
     const { title, type, status } = body;
@@ -231,9 +189,6 @@ class albumService {
               'title',
               'audio',
             ],
-            where: {
-              id: tracksByAuditions,
-            },
             include: [      
               {
                 model: Coauthor,      
@@ -336,32 +291,50 @@ class albumService {
         const limit = 2;
         const offset = (part - 1) * limit;
     
-        const tracks = await Album.findAll({
+        const albums = await Album.findAll({
           attributes: [
-          'id',
-          'title',
-          'img',
-          [Sequelize.literal('(SELECT COUNT(*) FROM Auditions JOIN Tracks ON Auditions.TrackId = Tracks.id WHERE Tracks.AlbumId = Album.id)'), 'auditions']
-        ],
-        where: {status: 2},
-          include: [      
-            {
-              model: User,
-              where: {
-                id: userId
-              },
-              attributes: ['id', 'nickname'],
-            },
+            'id',
+            'title',
+            'img',
+            [Sequelize.literal('(SELECT COUNT(*) FROM Auditions JOIN Tracks ON Auditions.TrackId = Tracks.id WHERE Tracks.AlbumId = Album.id)'), 'auditions']
           ],
+          where: {status: 2},
+          include: [{
+            model: Track,
+            attributes: [
+              'id',
+              'title',
+              'audio',
+            ],
+            include: [      
+              {
+                model: Coauthor,      
+                as: "CoauthorAlias",       
+                attributes: ['id'],        
+                include: {               
+                  model: User,                
+                  attributes: ['id','nickname'],
+                }  
+              },     
+            ],
+          },
+          {
+            model: User,
+            where: {
+              id: userId
+            },
+            attributes: ['id', 'nickname'],
+          } 
+        ],
           order: [[Sequelize.literal('auditions DESC')]], // сортировка поубыванию количества прослушиваний
           offset,
           limit  
         });
     
-        if(!tracks){
+        if(!albums){
           throw Object.assign(new Error("Альбомов нет!"), { statusCode: 400});  
         } 
-        return tracks;
+        return albums;
       }
 
       async getAlbumsForGenre(part,genreId) {

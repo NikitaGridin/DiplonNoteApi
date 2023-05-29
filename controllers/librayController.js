@@ -37,10 +37,12 @@ class librayController {
       next(error)
     }
    } 
+
+
    async allPlaylist(req, res, next){
-    const {limit,part,userId} = req.body;
+    const {part,userId} = req.params;
     try {
-      const allPlaylist = await librayService.allPlaylist(limit,part,userId);
+      const allPlaylist = await librayService.allPlaylist(part,userId);
       res.status(200).send(allPlaylist);
     } catch (error) {
       next(error)
@@ -64,15 +66,25 @@ class librayController {
       next(error)
     }
    } 
-   async allAlbum(req, res, next){
-    const {limit,part,userId} = req.body;
+
+   async addedAlbums(req, res, next){
+    const {userId} = req.params;
     try {
-      const allAlbums = await librayService.allAlbum(limit,part,userId);
+      const tracks = await librayService.addedAlbums(userId);
+      res.status(200).send(tracks);
+    } catch (error) {
+      next(error)
+    }
+   } 
+   async allAlbum(req, res, next){
+    const {part,userId} = req.params;
+    try {
+      const allAlbums = await librayService.allAlbum(part,userId);
       res.status(200).send(allAlbums);
     } catch (error) {
       next(error)
     }
-   }  
+   } 
    async addAlbum(req, res, next){
     const {albumId,userId} = req.body;
     try {
@@ -83,7 +95,7 @@ class librayController {
     }
    } 
    async deleteAlbum(req, res, next){
-    const {userId, albumId} = req.body;
+    const {userId, albumId} = req.params;
     try {
       const deleteAlbum = await librayService.deleteAlbum(userId, albumId);
       res.status(200).send("Альбом удалён!");

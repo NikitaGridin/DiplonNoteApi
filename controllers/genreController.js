@@ -3,9 +3,9 @@ const fs = require("fs");
 
 class genreController {
   async all(req, res, next) {
-    const {limit,part} = req.body;
+    const {part} = req.params;
     try {
-      const genres = await genreService.all(limit,part);
+      const genres = await genreService.all(part);
       res.status(200).send(genres);
     } catch (error) {
       next(error);

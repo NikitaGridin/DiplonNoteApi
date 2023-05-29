@@ -5,7 +5,7 @@ const genreController = require('../controllers/genreController')
 
 const { imageUpload } = require('../middleware/multerStorage');
 
-router.get("/all", genreController.all) 
+router.get("/all/:part", genreController.all) 
 router.get("/one/:id", genreController.one) 
 router.post("/add", imageUpload.single('img'), genreController.add) 
 router.put("/update/:id",  imageUpload.single('img'),genreController.update) 

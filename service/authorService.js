@@ -1,9 +1,11 @@
 const { User, Genre, Album, Track, Coauthor } = require("../models/association");
 const { sequelize } = require("../db");
+const { Op, Sequelize } = require('@sequelize/core');
 
 class authorService {
 
-  async all(limit = 10, part = 1, genreId) {
+  async all(part = 1) {
+    const limit = 10;
     const offset = (part - 1) * limit; 
     let include = [
       {
@@ -11,21 +13,6 @@ class authorService {
         attributes: ['id'] 
       }   
     ];
-  
-    if (genreId) {
-      include = [
-        {
-          model: Album,
-          attributes: ['id'], 
-          include: {
-            model: Genre,
-            attributes: ['id'],
-            where: {id: genreId},
-            through: { attributes: [] }
-          }      
-        }  
-      ];
-    }
   
     const users = await User.findAll({
     attributes: [
@@ -63,7 +50,8 @@ class authorService {
       return user;
   }
 
-  async waitAccept(limit=20,part=1,id) {
+  async waitAccept(part,id) {
+    const limit=20;
     const offset = (part - 1) * limit;
     
     const [results] = await Track.findAll({
@@ -72,7 +60,12 @@ class authorService {
         {
         model: Coauthor,
         as: "CoauthorAlias",
-        where: {UserId:id},
+        where: {
+          UserId: id,
+          user_confirm: {
+            [Op.or]: [1, 3]    
+          }  
+        },
         attributes: ['id'],
         include :{
           model: User,
@@ -81,9 +74,15 @@ class authorService {
       },
       {
         model: Album,
-        attributes: ['id','img']
+        attributes: ['id','img'],
+        include :{
+          model: User,
+          attributes: ['id','nickname']
+        }
       },
-    ]
+    ],
+    limit:limit,
+    offset:offset,
     });
 
     if(!results){

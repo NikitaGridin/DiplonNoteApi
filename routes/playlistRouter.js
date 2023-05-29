@@ -4,7 +4,7 @@ const playlistController = require('../controllers/playlistController')
 
 const { imageUpload } = require('../middleware/multerStorage');
 
-router.get("/all", playlistController.all) 
+router.get("/all/:part", playlistController.all) 
 router.get("/one/:id", playlistController.one) 
 router.post("/add", imageUpload.single('img'), playlistController.add);
 router.put("/update/:id",  imageUpload.single('img'),playlistController.update) 

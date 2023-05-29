@@ -12,6 +12,7 @@ const connectionsRouter = require('./connectionsRouter')
 const playlistRouter = require('./playlistRouter')
 const searchRouter = require('./searchRouter')
 const librayRouter = require('./librayRouter')
+const auditionRouter = require('./auditionRouter')
 
 router.use("/auth", authRouter)
 router.use("/user", userRouter)
@@ -25,5 +26,6 @@ router.use("/connections", connectionsRouter)
 router.use("/playlist", playlistRouter)
 router.use("/search", searchRouter)
 router.use("/libray", librayRouter)
+router.use("/audition", auditionRouter)
 
 module.exports = router;

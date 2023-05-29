@@ -1,6 +1,7 @@
-const { User, Album, Playlist, Track } = require("../models/association");
+const { User, Album, Playlist, Track, Subcribe } = require("../models/association");
 const bcrypt = require('bcrypt');
 const fs = require("fs");
+const { Op, Sequelize } = require("@sequelize/core");
 
 class userService {
 
@@ -15,13 +16,24 @@ class userService {
     return users;
     }
   
-  async one(id) {
-    const user = await User.findByPk(id,{attributes : ['id','nickname','email','img','role']});
+    async one(id) {  
+      const user = await User.findByPk(id, {
+        attributes: [
+          'id',
+          'nickname',
+          'email',
+          'img',
+          'role',
+          [Sequelize.literal(`(SELECT COUNT(*) FROM Subcribes where recipientId = ${id})`), 'subscribes']
+        ], 
+      });
+    
       if(!user){
-        throw Object.assign(new Error('Пользователь не найдён!'), { statusCode: 404 });
+        throw new Error('Пользователь не найдён!');
       }
-      return user;
-  }
+    
+      return user; 
+    }
   
   async update(body, id, img) {
     const { nickname, email, password } = body;

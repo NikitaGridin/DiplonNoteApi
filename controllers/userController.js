@@ -3,16 +3,16 @@ const fs = require("fs");
 
 class userController {
   async all(req, res, next) {
+    const users = await userService.all();
     try {
-      const users = await userService.all();
       res.status(200).send(users);
     } catch (error) {
       next(error);
     }
   }
   async one(req, res,next) {
+    const user = await userService.one(req.params.id)
     try {
-      const user = await userService.one(req.params.id)
       res.send(user).status(200);
     } catch (error) {
       next(error);

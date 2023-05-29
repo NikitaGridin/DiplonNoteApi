@@ -1,10 +1,11 @@
 const { sequelize } = require("../db");
-const { Genre, Album, AlbumGenre, Track } = require("../models/association");
+const { Genre, Album } = require("../models/association");
 const fs = require("fs");
 
 class genreService {
 
-  async all(limit = 4, part= 1) {
+  async all(part) {
+    const limit = 4;
     const offset = (part - 1) * limit;
 
     const genres = await Genre.findAll({
@@ -18,8 +19,8 @@ class genreService {
         JOIN AlbumGenres ON Albums.id = AlbumGenres.albumId 
         WHERE AlbumGenres.genreId = Genres.id)`), 'count_tracks'],
       ],   
-      limit,
-      offset 
+      offset: offset,
+      limit: limit,
     })
     return genres
   }

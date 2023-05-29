@@ -3,9 +3,9 @@ const fs = require("fs");
 
 class authorController {
   async all(req, res, next) {
-    const {limit,part, genreId} = req.body;
+    const {part} = req.params;
     try {
-      const authors = await authorService.all(limit,part, genreId);
+      const authors = await authorService.all(part);
       res.status(200).send(authors);
     } catch (error) {
       next(error);
@@ -20,9 +20,9 @@ class authorController {
     }
   }
   async waitAccept(req, res,next) {
-    const {limit,part,id} = req.body;
+    const {part,id} = req.params;
     try {
-      const user = await authorService.waitAccept(limit,part,id)
+      const user = await authorService.waitAccept(part,id)
       res.send(user).status(200);
     } catch (error) {
       next(error);

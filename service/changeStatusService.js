@@ -1,4 +1,4 @@
-const { Album, UserTrack } = require("../models/association");
+const { Album, Coauthor } = require("../models/association");
 
 class changeStatusService {
   async application(id, status) {
@@ -13,11 +13,11 @@ class changeStatusService {
   
     return findAlbum;
   }
-  async track(id, userId, status) {
-    const userTrack = await UserTrack.findOne({
+  async track(trackId, userId, status) {
+    const userTrack = await Coauthor.findOne({
       where: {
-        trackId: id,
-        userId: userId
+        TrackId: trackId,
+        UserId: userId
       }
     });
 

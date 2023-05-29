@@ -11,9 +11,9 @@ class adminController {
     }
    }  
    async track(req, res, next){
-    const {id,userId,status} = req.body;
+    const {trackId,userId,status} = req.body;
     try {
-      const album = await changeStatusService.track(id,userId,status);
+      const album = await changeStatusService.track(trackId,userId,status);
       res.status(200).send('Статус изменён!');
     } catch (error) {
       next(error)

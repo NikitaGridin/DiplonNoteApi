@@ -3,9 +3,9 @@ const playlistService = require("../service/playlistService");
 
 class playlistController {
   async all(req, res, next){
-    const {limit,part, userId} = req.body;
+    const {part} = req.params;
     try {
-      const playlists = await playlistService.all(limit,part,userId);
+      const playlists = await playlistService.all(part);
       res.status(200).send(playlists);
     } catch (error) {
       next(error)

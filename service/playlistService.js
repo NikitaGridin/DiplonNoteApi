@@ -4,7 +4,8 @@ const fs = require("fs");
 
 class playlistService {
 
-  async all(limit = 4, part = 1, userId) {
+  async all(part) {
+    const limit = 4;
     const offset = (part - 1) * limit;
     const playlists = await Playlist.findAll({
       attributes: {
@@ -14,7 +15,6 @@ class playlistService {
       },
       include: {
         model: User,
-        where: {id:userId},
         attributes: ['id','nickname']
       },
       limit: limit,

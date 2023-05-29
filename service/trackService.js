@@ -120,6 +120,9 @@ class trackService {
               'audio',
               [Sequelize.literal('(SELECT COUNT(*) FROM Auditions JOIN Tracks ON Auditions.TrackId = Tracks.id)'), 'auditions']
             ],
+            where: {
+              id: tracksByAuditions,
+            },
             include: [      
               {
                 model: Coauthor,      
