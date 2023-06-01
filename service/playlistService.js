@@ -1,86 +1,111 @@
 const { sequelize } = require("../db");
-const { Playlist, AlbumGenre, Track, Album, Coauthor, User } = require("../models/association");
+const {
+  Playlist,
+  AlbumGenre,
+  Track,
+  Album,
+  Coauthor,
+  User,
+} = require("../models/association");
 const fs = require("fs");
 
 class playlistService {
-
   async all(part) {
     const limit = 4;
     const offset = (part - 1) * limit;
     const playlists = await Playlist.findAll({
       attributes: {
         include: [
-          [sequelize.literal('(SELECT COUNT(*) FROM Auditions JOIN PlaylistsTracks ON Auditions.TrackId = PlaylistsTracks.TrackId WHERE PlaylistsTracks.PlaylistId = Playlists.id)'), 'auditions']
+          [
+            sequelize.literal(
+              "(SELECT COUNT(*) FROM Auditions JOIN PlaylistsTracks ON Auditions.TrackId = PlaylistsTracks.TrackId WHERE PlaylistsTracks.PlaylistId = Playlists.id)"
+            ),
+            "auditions",
+          ],
         ],
       },
       include: {
         model: User,
-        attributes: ['id','nickname']
+        attributes: ["id", "nickname"],
       },
       limit: limit,
-      offset: offset
+      offset: offset,
     });
-  
+    if (!playlists.length) {
+      return {
+        error: "Плейлисты кончились!",
+      };
+    }
     return playlists;
   }
 
-  async one(id) {  
-    const playlist = await Playlist.findByPk(id,{
+  async one(id) {
+    const playlist = await Playlist.findByPk(id, {
       attributes: {
         include: [
-          [sequelize.literal('(SELECT COUNT(*) FROM Auditions JOIN PlaylistsTracks ON Auditions.TrackId = PlaylistsTracks.TrackId WHERE PlaylistsTracks.PlaylistId = Playlists.id)'), 'auditions']
+          [
+            sequelize.literal(
+              "(SELECT COUNT(*) FROM Auditions JOIN PlaylistsTracks ON Auditions.TrackId = PlaylistsTracks.TrackId WHERE PlaylistsTracks.PlaylistId = Playlists.id)"
+            ),
+            "auditions",
+          ],
         ],
       },
       include: [
         {
           model: Track,
           through: { attributes: [] },
-          attributes: ['id','title','audio'],
-          include:[
+          attributes: ["id", "title", "audio"],
+          include: [
             {
               model: Coauthor,
               as: "CoauthorAlias",
             },
             {
               model: Album,
-              attributes: ['id', 'img']
-            }
-          ]
-        }
-      ]
-    })
-    if(!playlist){
-      throw Object.assign(new Error("Плейлист не найден!"), { statusCode: 400 });
+              attributes: ["id", "img"],
+            },
+          ],
+        },
+      ],
+    });
+    if (!playlist) {
+      throw Object.assign(new Error("Плейлист не найден!"), {
+        statusCode: 400,
+      });
     }
-    
+
     return playlist;
   }
-  
+
   async add(body, file) {
-    const {title,userId} = body;
-    
-    if(!title ||  !userId || !file){
-      throw Object.assign(new Error("Пожалуйста, заполните все поля!"), { statusCode: 400 });
+    const { title, userId } = body;
+
+    if (!title || !userId || !file) {
+      throw Object.assign(new Error("Пожалуйста, заполните все поля!"), {
+        statusCode: 400,
+      });
     }
 
     const newPlaylist = await Playlist.create({
-      title:title,
+      title: title,
       img: file.filename,
       UserId: userId,
     });
-    
-    return newPlaylist;
 
+    return newPlaylist;
   }
 
   async update(body, id, img) {
     const { title } = body;
 
     const findPlaylist = await Playlist.findByPk(id);
-    if(!findPlaylist){
-      throw Object.assign(new Error('Плейлист не найдён!'), { statusCode: 404 });
+    if (!findPlaylist) {
+      throw Object.assign(new Error("Плейлист не найдён!"), {
+        statusCode: 404,
+      });
     }
-  
+
     const updateFields = {};
     if (title) updateFields.title = title;
     if (img) {
@@ -89,31 +114,34 @@ class playlistService {
       }
       updateFields.img = img.filename;
     }
-      const [numRows, updatedPlaylist] = await Playlist.update(updateFields, {
-        where: { id },
-        returning: true
-        });
-        
-      if (numRows === 0) {
-      throw Object.assign(new Error('Не указаны поля для обновления'), { statusCode: 400 });
-      }
+    const [numRows, updatedPlaylist] = await Playlist.update(updateFields, {
+      where: { id },
+      returning: true,
+    });
 
-      return updatedPlaylist;
+    if (numRows === 0) {
+      throw Object.assign(new Error("Не указаны поля для обновления"), {
+        statusCode: 400,
+      });
     }
 
-    async delete(id) {
-      const findPlaylist = await Playlist.findByPk(id);
-      if(!findPlaylist){
-        throw Object.assign(new Error('Плейлист не найдён!'), { statusCode: 404 });
-      }
-      const imagePath = `uploads/images/${findPlaylist.img}`;
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
-      }
-      const deleteTrack = await findPlaylist.destroy();
+    return updatedPlaylist;
+  }
 
-      return deleteTrack;
-      }
+  async delete(id) {
+    const findPlaylist = await Playlist.findByPk(id);
+    if (!findPlaylist) {
+      throw Object.assign(new Error("Плейлист не найдён!"), {
+        statusCode: 404,
+      });
+    }
+    const imagePath = `uploads/images/${findPlaylist.img}`;
+    if (fs.existsSync(imagePath)) {
+      fs.unlinkSync(imagePath);
+    }
+    const deleteTrack = await findPlaylist.destroy();
 
+    return deleteTrack;
+  }
 }
 module.exports = new playlistService();

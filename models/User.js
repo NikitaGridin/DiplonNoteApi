@@ -1,9 +1,6 @@
 const { sequelize } = require("../db");
 const { DataTypes } = require("@sequelize/core");
-
-//Модель пользователя
-const User = sequelize.define(
-    "User",
+const User = sequelize.define("User",
     {
       id: {type: DataTypes.INTEGER,primaryKey: true,autoIncrement: true},
       nickname: { type: DataTypes.STRING, allowNull: false, unique: true},
@@ -15,5 +12,4 @@ const User = sequelize.define(
       isActivation: {type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false}
     }
   );
-  
-  module.exports = {User};
+module.exports = {User};

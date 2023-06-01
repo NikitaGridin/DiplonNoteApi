@@ -1,7 +1,5 @@
 const { sequelize } = require("../db");
 const { DataTypes } = require("@sequelize/core");
-
-//Модель альбома
 const Album = sequelize.define(
     "Album",
     {
@@ -15,5 +13,4 @@ const Album = sequelize.define(
       },
     }
   );  
-
   module.exports = {Album};
