@@ -7,6 +7,7 @@ const {
   Coauthor,
   User,
   LibrayPlaylist,
+  PlaylistTrack,
 } = require("../models/association");
 const fs = require("fs");
 
@@ -67,6 +68,10 @@ class playlistService {
               attributes: ["id", "img"],
             },
           ],
+        },
+        {
+          model: User,
+          attributes: ["id", "nickname"],
         },
       ],
     });
@@ -131,7 +136,7 @@ class playlistService {
       });
     }
 
-    return updatedPlaylist;
+    return updateFields;
   }
 
   async delete(id) {
@@ -149,5 +154,26 @@ class playlistService {
 
     return deleteTrack;
   }
+  async trackInPlaylist(trackId, playlistId) {
+    const playlist = await PlaylistTrack.findOne({
+      where: {
+        TrackId: trackId,
+        PlaylistId: playlistId,
+      },
+    });
+    if (!playlist) {
+      const newPlaylist = await PlaylistTrack.create({
+        TrackId: trackId,
+        PlaylistId: playlistId,
+      });
+      return newPlaylist;
+    } else {
+      await playlist.destroy();
+      return {
+        message: "Трек удален из плейлиста",
+      };
+    }
+  }
 }
+
 module.exports = new playlistService();

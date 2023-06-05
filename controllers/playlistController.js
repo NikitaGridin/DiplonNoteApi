@@ -40,7 +40,7 @@ class playlistController {
     const { body, file, params } = req; // Получаем данные из объекта req
     try {
       const album = await playlistService.update(body, params.id, file);
-      res.status(200).send("Данные успешно изменены!");
+      res.status(200).send(album);
     } catch (error) {
       if (file) {
         await fs.promises.unlink(`uploads/images/${file.filename}`);
@@ -54,6 +54,19 @@ class playlistController {
     try {
       const playlist = await playlistService.delete(id);
       res.status(200).send("Плейлист удалён!");
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async trackInPlaylist(req, res, next) {
+    const { trackId, playlistId } = req.body;
+    try {
+      const playlists = await playlistService.trackInPlaylist(
+        trackId,
+        playlistId
+      );
+      res.status(200).send(playlists);
     } catch (error) {
       next(error);
     }

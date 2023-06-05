@@ -170,7 +170,9 @@ class trackService {
         },
         {
           model: Album,
-          attributes: ["id", "img"],
+          attributes: ["id", "img", "status", "UserId"],
+          where: { status: 2 },
+
           include: {
             model: User,
             attributes: ["id", "nickname"],
@@ -184,7 +186,7 @@ class trackService {
       offset,
       limit,
     });
-    if (!tracks.length) {
+    if (!tracks || !tracks.length) {
       return {
         error: "Треки кончились!",
       };
@@ -229,7 +231,7 @@ class trackService {
         {
           model: Album,
           attributes: ["id", "img"],
-          where: { UserId: userId },
+          where: { UserId: userId, status: 2 },
           include: {
             model: User,
             where: {
@@ -244,8 +246,10 @@ class trackService {
       limit,
     });
 
-    if (!tracks) {
-      throw Object.assign(new Error("Треков нет!"), { statusCode: 400 });
+    if (!tracks || !tracks.length) {
+      return {
+        error: "Треки кончились!",
+      };
     }
     return tracks;
   }
@@ -286,6 +290,7 @@ class trackService {
         {
           model: Album,
           attributes: ["id", "img", "UserId"],
+          where: { status: 2 },
           include: [
             {
               model: User,

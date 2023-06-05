@@ -82,16 +82,20 @@ class librayService {
     const deleteTrack = await findTrack.destroy();
     return deleteTrack;
   }
-
   async allPlaylist(part, userId) {
-    const limit = 10;
-    const offset = (part - 1) * limit;
+    const limit = part === "all" ? null : 10; // если part равен "all", то не задаем лимит
+    const offset = part === "all" ? 0 : (part - 1) * limit; // если part равен "all", то смещение равно 0
     const tracks = await Playlist.findAll({
       attributes: ["id", "title", "img"],
       include: [
         {
           model: LibrayPlaylist,
           where: { UserId: userId },
+        },
+        {
+          model: Track,
+          attributes: ["id"],
+          through: { attributes: [] },
         },
         {
           model: User,

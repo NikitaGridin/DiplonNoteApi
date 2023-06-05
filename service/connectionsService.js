@@ -2,38 +2,48 @@ const { Subcribe, User } = require("../models/association");
 const { sequelize } = require("../db");
 
 class connectionsService {
-  async checkSubscribe(subscriberId, userId) {
+  async checkSubscribe(recipientId, userId) {
     const subscription = await Subcribe.findOne({
       where: {
-        id: subscriberId,
-        userId: userId,
+        recipientId: userId,
+        senderIdId: recipientId,
       },
     });
 
-    const subscription2 = await Subcribe.findOne({
+    const reverseSubscription = await Subcribe.findOne({
       where: {
-        userId: subscriberId,
-        subscriberId: userId,
+        recipientId: recipientId,
+        senderIdId: userId,
       },
     });
-
-    return !!subscription;
+    console.log(subscription, reverseSubscription);
+    if (!subscription && !reverseSubscription) {
+      return "Подписаться";
+    } else if (subscription && !reverseSubscription) {
+      return "Отписаться";
+    } else if (!subscription && !reverseSubscription) {
+      return "Отписаться";
+    } else if (subscription && reverseSubscription) {
+      return "Вы в друзьях";
+    } else {
+      return "На вас подписан";
+    }
   }
   async changeSubscribe(id, userId, status) {
     if (status === "delete") {
       await Subcribe.destroy({
         where: {
-          subscriberId: id,
-          userId: userId,
+          recipientId: id,
+          senderIdId: userId,
         },
       });
-      return "Удалён";
+      return "Подписаться";
     } else if (status === "add") {
       await Subcribe.create({
-        subscriberId: id,
-        userId: userId,
+        recipientId: id,
+        senderIdId: userId,
       });
-      return "Добавлен";
+      return "Отписаться";
     } else {
       throw new Error("Invalid status");
     }

@@ -26,7 +26,7 @@ class genreService {
         JOIN Tracks ON Auditions.TrackId = Tracks.id
         JOIN Albums ON Tracks.AlbumId = Albums.id
         JOIN AlbumGenres ON Albums.id = AlbumGenres.AlbumId
-        WHERE AlbumGenres.GenreId = Genres.id)`),
+        WHERE AlbumGenres.GenreId = Genres.id AND Albums.status = 2)`),
           "avg_plays",
         ],
       ],
@@ -53,7 +53,7 @@ class genreService {
         JOIN Tracks ON Auditions.TrackId = Tracks.id
         JOIN Albums ON Tracks.AlbumId = Albums.id
         JOIN AlbumGenres ON Albums.id = AlbumGenres.AlbumId
-        WHERE AlbumGenres.GenreId = ${id})`),
+        WHERE AlbumGenres.GenreId = ${id} AND Albums.status = 2)`),
           "avg_plays",
         ],
       ],
@@ -146,7 +146,7 @@ class genreService {
         JOIN Tracks ON Auditions.TrackId = Tracks.id
         JOIN Albums ON Tracks.AlbumId = Albums.id
         JOIN AlbumGenres ON Albums.id = AlbumGenres.AlbumId
-        WHERE AlbumGenres.GenreId = Genres.id)`),
+        WHERE AlbumGenres.GenreId = Genres.id AND Albums.status = 2)`),
           "avg_plays",
         ],
       ],

@@ -29,7 +29,7 @@ class authorService {
             `(SELECT COUNT(*) FROM Auditions 
         JOIN Tracks ON Auditions.TrackId = Tracks.id 
         JOIN Albums ON Tracks.AlbumId = Albums.id 
-        WHERE Albums.UserId = User.id)`
+        WHERE Albums.UserId = User.id AND Albums.status = 2)`
           ),
           "avg_plays",
         ],
@@ -120,7 +120,7 @@ class authorService {
             FROM Auditions
             JOIN Tracks ON Auditions.TrackId = Tracks.id
             JOIN Albums ON Tracks.AlbumId = Albums.id
-            WHERE Albums.UserId = User.id)`),
+            WHERE Albums.UserId = User.id AND Albums.status = 2)`),
           "avg_plays",
         ],
         [

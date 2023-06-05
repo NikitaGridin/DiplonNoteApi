@@ -10,4 +10,6 @@ router.post("/add", imageUpload.single("img"), playlistController.add);
 router.put("/update/:id", imageUpload.single("img"), playlistController.update);
 router.delete("/delete/:id", playlistController.delete);
 
+router.post("/trackInPlaylist", playlistController.trackInPlaylist);
+
 module.exports = router;

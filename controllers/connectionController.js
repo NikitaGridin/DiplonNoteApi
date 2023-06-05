@@ -2,28 +2,13 @@ const connectionsService = require("../service/connectionsService");
 
 class adminController {
   async checkSubscribe(req, res, next) {
-    const { subscriberId, userId } = req.body;
+    const { recipientId, userId } = req.params;
     try {
-      // проверяем, подписан ли текущий пользователь на пользователя с ID userId
-      const isSubscribedToUser = await connectionsService.checkSubscribe(
-        subscriberId,
+      const subscriptionStatus = await connectionsService.checkSubscribe(
+        recipientId,
         userId
       );
-      // проверяем, подписан ли другой пользователь на пользователя с ID userId
-      const isOtherUserSubscribed = await connectionsService.checkSubscribe(
-        userId,
-        subscriberId
-      );
-
-      if (isSubscribedToUser && !isOtherUserSubscribed) {
-        res.status(200).send("Отписаться");
-      } else if (isOtherUserSubscribed && !isSubscribedToUser) {
-        res.status(200).send("Подписан на вас");
-      } else if (isSubscribedToUser && isOtherUserSubscribed) {
-        res.status(200).send("Вы в друзьях");
-      } else {
-        res.status(200).send("Подписаться");
-      }
+      res.status(200).send(subscriptionStatus);
     } catch (error) {
       next(error);
     }

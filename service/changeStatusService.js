@@ -1,8 +1,8 @@
 const { Album, Coauthor } = require("../models/association");
 
 class changeStatusService {
-  async application(id, status) {
-    const findAlbum = await Album.findByPk(id);
+  async application(albumId, status) {
+    const findAlbum = await Album.findByPk(albumId);
 
     if (!findAlbum) {
       throw Object.assign(new Error("Альбом не найден!"), { statusCode: 400 });
