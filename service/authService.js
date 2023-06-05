@@ -133,7 +133,7 @@ class authService {
       }
 
       const userData = tokenService.validateRefreshToken(refreshToken);
-      const tokenFromDb = await tokenService.findToken(refreshToken);
+      const tokenFromDb = tokenService.findToken(refreshToken);
 
       if (!userData || !tokenFromDb) {
         throw Object.assign(new Error(`Пользователь не найден`), {

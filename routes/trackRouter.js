@@ -13,5 +13,6 @@ router.get(
 );
 router.get("/tracksForAuthor/:part/:userId", trackController.tracksForAuthor);
 router.get("/tracksForGenre/:part/:genreId", trackController.tracksForGenre);
+router.get("/latest/:part/:userId", trackController.latest);
 
 module.exports = router;

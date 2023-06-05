@@ -30,7 +30,6 @@ class authorController {
   }
   async getMostListenedAuthorsInCurrentMonth(req, res, next) {
     const { part } = req.params;
-    console.log(part);
     try {
       const authors = await authorService.getMostListenedAuthorsInCurrentMonth(
         part

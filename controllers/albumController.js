@@ -26,13 +26,8 @@ class albumController {
       const album = await albumService.add(body, files);
       res.status(200).send(album);
     } catch (error) {
-      if (files && files.img) {
-        fs.unlink(files.img[0].path, (err) => {
-          if (err) console.log(err);
-        });
-      }
-      if (files && files.audio) {
-        for (const file of files.audio) {
+      if (files) {
+        for (const file of files) {
           fs.unlink(file.path, (err) => {
             if (err) console.log(err);
           });
@@ -46,7 +41,7 @@ class albumController {
     const { body, file, params } = req;
     try {
       const album = await albumService.update(body, params.id, file);
-      res.status(200).send("Данные успешно изменены!");
+      res.status(200).send(album);
     } catch (error) {
       if (file) {
         await fs.promises.unlink(`uploads/images/${file.filename}`);

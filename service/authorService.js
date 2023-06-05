@@ -31,12 +31,12 @@ class authorService {
         JOIN Albums ON Tracks.AlbumId = Albums.id 
         WHERE Albums.UserId = User.id)`
           ),
-          "auditions",
+          "avg_plays",
         ],
         [
           sequelize.literal(`
-        (SELECT Genres.title    
-        FROM Albums
+          (SELECT Genres.title
+            FROM Albums
         JOIN AlbumGenres ON Albums.id = AlbumGenres.AlbumId  
         JOIN Genres ON AlbumGenres.GenreId = Genres.id
         WHERE Albums.UserId = User.id  
@@ -116,15 +116,28 @@ class authorService {
         "nickname",
         "img",
         [
-          Sequelize.literal(
-            "(SELECT COUNT(*) FROM Auditions JOIN Tracks ON Auditions.TrackId = Tracks.id WHERE MONTH(Auditions.date_create) = :month AND Tracks.AlbumId IN (SELECT Albums.id FROM Albums WHERE Albums.UserId = User.id))"
-          ),
-          "auditions",
+          sequelize.literal(`(SELECT COUNT(*) / COUNT(DISTINCT DATE_FORMAT(Auditions.date_create, '%Y-%m')) AS aver_per_month  
+            FROM Auditions
+            JOIN Tracks ON Auditions.TrackId = Tracks.id
+            JOIN Albums ON Tracks.AlbumId = Albums.id
+            WHERE Albums.UserId = User.id)`),
+          "avg_plays",
+        ],
+        [
+          sequelize.literal(`
+        (SELECT Genres.title
+        FROM Albums
+        JOIN AlbumGenres ON Albums.id = AlbumGenres.AlbumId  
+        JOIN Genres ON AlbumGenres.GenreId = Genres.id
+        WHERE Albums.UserId = User.id  
+        GROUP BY Genres.id  
+        LIMIT 1)`),
+          "popular_genre",
         ],
       ],
       replacements: { month },
-      having: Sequelize.literal("auditions > 0"),
-      order: [[Sequelize.literal("auditions DESC")]],
+      having: Sequelize.literal("avg_plays > 0"),
+      order: [[Sequelize.literal("avg_plays DESC")]],
       offset,
       limit,
     });

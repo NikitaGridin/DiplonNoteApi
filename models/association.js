@@ -91,8 +91,6 @@ User.belongsToMany(User, {
   foreignKey: "recipientId",
 });
 
-Subcribe.belongsTo(User, { as: "user" });
-
 module.exports = {
   User,
   Track,

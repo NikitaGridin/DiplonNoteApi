@@ -5,8 +5,15 @@ const { Op, Sequelize } = require("@sequelize/core");
 
 class genreService {
   async all(part) {
-    const limit = 4;
-    const offset = (part - 1) * limit;
+    let limit, offset;
+
+    if (part === "all") {
+      limit = null;
+      offset = null;
+    } else {
+      limit = 20;
+      offset = (part - 1) * limit;
+    }
 
     const genres = await Genre.findAll({
       attributes: [
@@ -14,12 +21,13 @@ class genreService {
         "title",
         "img",
         [
-          sequelize.literal(`(SELECT COUNT(*) AS total_tracks 
-        FROM tracks 
-        JOIN Albums ON tracks.albumId = Albums.id
-        JOIN AlbumGenres ON Albums.id = AlbumGenres.albumId 
-        WHERE AlbumGenres.genreId = Genres.id)`),
-          "count_tracks",
+          sequelize.literal(`(SELECT COUNT(*) / COUNT(DISTINCT DATE_FORMAT(Auditions.date_create, '%Y-%m')) AS aver_per_month  
+        FROM Auditions
+        JOIN Tracks ON Auditions.TrackId = Tracks.id
+        JOIN Albums ON Tracks.AlbumId = Albums.id
+        JOIN AlbumGenres ON Albums.id = AlbumGenres.AlbumId
+        WHERE AlbumGenres.GenreId = Genres.id)`),
+          "avg_plays",
         ],
       ],
       offset: offset,
@@ -62,8 +70,8 @@ class genreService {
           statusCode: 400,
         });
       }
-      const findAlbum = await Album.findAll({ where: { title } });
-      if (findAlbum) {
+      const findGenre = await Genre.findOne({ where: { title } });
+      if (findGenre) {
         throw Object.assign(new Error("Жанр уже существует!"), {
           statusCode: 400,
         });
@@ -105,14 +113,17 @@ class genreService {
         statusCode: 400,
       });
     }
-
-    return updatedUser;
+    return updateFields;
   }
 
   async delete(id) {
     const findGenre = await Genre.findByPk(id);
     if (!findGenre) {
       throw Object.assign(new Error("Жанр не найден"), { statusCode: 404 });
+    }
+    const imagePath = `uploads/images/${findGenre.img}`;
+    if (fs.existsSync(imagePath)) {
+      fs.unlinkSync(imagePath);
     }
     const deleteGenre = await Genre.destroy({ where: { id } });
     return deleteGenre;
@@ -130,15 +141,18 @@ class genreService {
         "title",
         "img",
         [
-          Sequelize.literal(
-            "(SELECT COUNT(*) FROM Auditions JOIN Tracks ON Auditions.TrackId = Tracks.id WHERE MONTH(Auditions.date_create) = :month AND Tracks.AlbumId IN (SELECT Albums.id FROM Albums JOIN AlbumGenres ON Albums.id = AlbumGenres.AlbumId WHERE AlbumGenres.GenreId = Genres.id))"
-          ),
-          "auditions",
+          sequelize.literal(`(SELECT COUNT(*) / COUNT(DISTINCT DATE_FORMAT(Auditions.date_create, '%Y-%m')) AS aver_per_month  
+        FROM Auditions
+        JOIN Tracks ON Auditions.TrackId = Tracks.id
+        JOIN Albums ON Tracks.AlbumId = Albums.id
+        JOIN AlbumGenres ON Albums.id = AlbumGenres.AlbumId
+        WHERE AlbumGenres.GenreId = Genres.id)`),
+          "avg_plays",
         ],
       ],
       replacements: { month },
-      having: Sequelize.literal("auditions > 0"),
-      order: [[Sequelize.literal("auditions DESC")]], // сортировка по убыванию количества прослушиваний
+      having: Sequelize.literal("avg_plays > 0"),
+      order: [[Sequelize.literal("avg_plays DESC")]],
       offset,
       limit,
     });

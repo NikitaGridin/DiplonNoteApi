@@ -6,6 +6,7 @@ const {
   Album,
   Coauthor,
   User,
+  LibrayPlaylist,
 } = require("../models/association");
 const fs = require("fs");
 
@@ -93,7 +94,12 @@ class playlistService {
       UserId: userId,
     });
 
-    return newPlaylist;
+    const newLibraryPlaylist = await LibrayPlaylist.create({
+      PlaylistId: newPlaylist.id,
+      UserId: userId,
+    });
+
+    return { newPlaylist };
   }
 
   async update(body, id, img) {

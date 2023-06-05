@@ -38,7 +38,7 @@ class genreController {
     const { body, file, params } = req;
     try {
       const genre = await genreService.update(body, params.id, file);
-      res.status(200).send("Данные успешно изменены!");
+      res.status(200).send(genre);
     } catch (error) {
       next(error);
     }
@@ -56,7 +56,6 @@ class genreController {
 
   async mostListenedGenresInCurrentMonth(req, res, next) {
     const { part } = req.params;
-    console.log(part);
     try {
       const tracks = await genreService.getMostListenedTracksInCurrentMonth(
         part

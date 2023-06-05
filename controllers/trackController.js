@@ -3,7 +3,6 @@ const trackService = require("../service/trackService");
 class trackController {
   async all(req, res, next) {
     const { part, id, genreId } = req.params;
-    console.log(part);
     try {
       const tracks = await trackService.all(part, id, genreId);
       res.status(200).send(tracks);
@@ -44,7 +43,6 @@ class trackController {
 
   async mostListenedTracksInCurrentMonth(req, res, next) {
     const { part } = req.params;
-    console.log(part);
     try {
       const tracks = await trackService.getMostListenedTracksInCurrentMonth(
         part
@@ -57,7 +55,6 @@ class trackController {
 
   async tracksForAuthor(req, res, next) {
     const { part, userId } = req.params;
-    console.log(part);
     try {
       const tracks = await trackService.getTracksForAuthor(part, userId);
       res.status(200).send(tracks);
@@ -68,9 +65,18 @@ class trackController {
 
   async tracksForGenre(req, res, next) {
     const { part, genreId } = req.params;
-    console.log(part);
     try {
       const tracks = await trackService.getTracksForGenre(part, genreId);
+      res.status(200).send(tracks);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async latest(req, res, next) {
+    const { part, userId } = req.params;
+    try {
+      const tracks = await trackService.latest(part, userId);
       res.status(200).send(tracks);
     } catch (error) {
       next(error);

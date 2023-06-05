@@ -1,11 +1,10 @@
 function errorHandler(err, req, res, next) {
-  console.error(err.stack);
   const statusCode = err.statusCode || 500;
-  const message = err.message || 'Что-то пошло не так!';
-  if (res.headersSent) {
-    return next(err);
-  }
-  res.status(statusCode).send(message);
+  const message = err.message || "Что-то пошло не так!";
+
+  res.status(err.statusCode || 500).send(err.message);
+
+  return next(err);
 }
 
 module.exports = errorHandler;

@@ -88,7 +88,7 @@ class librayController {
     }
   }
   async addAlbum(req, res, next) {
-    const { albumId, userId } = req.body;
+    const { albumId, userId } = req.params;
     try {
       const album = await librayService.addAlbum(albumId, userId);
       res.status(200).send("Альбом успешно добавлен!");

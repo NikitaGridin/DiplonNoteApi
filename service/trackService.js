@@ -1,10 +1,13 @@
 const { Op, Sequelize } = require("@sequelize/core");
+const { sequelize } = require("../db");
+
 const {
   Track,
   Coauthor,
   User,
   Album,
   Genre,
+  Audition,
 } = require("../models/association");
 const fs = require("fs");
 
@@ -26,13 +29,15 @@ class trackService {
         },
         {
           model: Album,
-          attributes: ["id", "img"],
+          attributes: ["id", "img", "status", "UserId"],
+          where: { status: 2 },
           include: {
             model: User,
             attributes: ["id", "nickname"],
           },
         },
       ],
+
       offset,
       limit,
     });
@@ -105,7 +110,26 @@ class trackService {
     if (fs.existsSync(findTrack.audio)) {
       fs.unlinkSync(findTrack.audio);
     }
+    const albumId = findTrack.AlbumId;
+    const tracks = await Track.findAll({ where: { albumId } });
     const deleteTrack = await Track.destroy({ where: { id } });
+    const imagePath = `uploads/audio/${findTrack.audio}`;
+    if (fs.existsSync(imagePath)) {
+      fs.unlinkSync(imagePath);
+    }
+    if (tracks.length === 1) {
+      const findAlbum = await Album.findByPk(albumId);
+      if (!findAlbum) {
+        throw Object.assign(new Error("Альбом не найден!"), {
+          statusCode: 404,
+        });
+      }
+      await Album.destroy({ where: { id: albumId } });
+      const imagePath = `uploads/images/${findAlbum.img}`;
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+    }
     return deleteTrack;
   }
 
@@ -227,7 +251,7 @@ class trackService {
   }
 
   async getTracksForGenre(part, genreId) {
-    const limit = 2;
+    const limit = 20;
     const offset = (part - 1) * limit;
 
     const tracks = await Track.findAll({
@@ -261,19 +285,21 @@ class trackService {
         },
         {
           model: Album,
-          attributes: ["id", "img"],
-          include: {
-            model: User,
-            attributes: ["id", "nickname"],
-          },
-          include: {
-            model: Genre,
-            attributes: ["id", "title"],
-            where: {
-              id: genreId,
+          attributes: ["id", "img", "UserId"],
+          include: [
+            {
+              model: User,
+              attributes: ["id", "nickname"],
             },
-            through: { attributes: [] },
-          },
+            {
+              model: Genre,
+              attributes: ["id", "title"],
+              where: {
+                id: genreId,
+              },
+              through: { attributes: [] },
+            },
+          ],
         },
       ],
       order: [[Sequelize.literal("auditions DESC")]], // сортировка поубыванию количества прослушиваний
@@ -284,6 +310,55 @@ class trackService {
     if (!tracks) {
       throw Object.assign(new Error("Треков нет!"), { statusCode: 400 });
     }
+    return tracks;
+  }
+
+  async latest(part, userId) {
+    const limit = 2;
+    const offset = (part - 1) * limit;
+
+    const tracks = await Track.findAll({
+      attributes: ["id", "title", "audio"],
+      include: [
+        {
+          model: Coauthor,
+          as: "CoauthorAlias",
+          attributes: ["id"],
+          include: {
+            model: User,
+            attributes: ["id", "nickname"],
+          },
+        },
+        {
+          model: Album,
+          attributes: ["id", "img", "UserId"],
+          include: [
+            {
+              model: User,
+              attributes: ["id", "nickname"],
+            },
+          ],
+        },
+        {
+          model: Audition,
+          attributes: ["id"],
+          include: {
+            model: User,
+            attributes: ["id"],
+            where: { id: userId },
+          },
+          order: [["date_create", "DESC"]],
+        },
+      ],
+      order: [[Sequelize.literal('"Auditions.date_create" DESC')]], // сортировка по дате прослушивания
+      offset,
+      limit,
+    });
+
+    if (!tracks) {
+      throw Object.assign(new Error("Треков нет!"), { statusCode: 400 });
+    }
+
     return tracks;
   }
 }

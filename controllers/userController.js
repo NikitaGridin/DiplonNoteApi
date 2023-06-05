@@ -10,20 +10,20 @@ class userController {
       next(error);
     }
   }
-  async one(req, res,next) {
-    const user = await userService.one(req.params.id)
+  async one(req, res, next) {
     try {
+      const user = await userService.one(req.params.id);
       res.send(user).status(200);
     } catch (error) {
       next(error);
     }
   }
-  
+
   async update(req, res, next) {
     const { body, file, params } = req;
     try {
-      const user = await userService.update(body,params.id,file)
-      res.status(200).send('Данные успешно изменены!');
+      const user = await userService.update(body, params.id, file);
+      res.status(200).send("Данные успешно изменены!");
     } catch (error) {
       if (file) {
         await fs.promises.unlink(`uploads/images/${file.filename}`);
@@ -33,15 +33,13 @@ class userController {
   }
 
   async delete(req, res, next) {
-    const {id} = req.params;
-  try {
-    const user = await userService.delete(id)
-    res.status(200).send('Пользователь удалён!');
-  } catch (error) {
-    next(error);
-  }
+    const { id } = req.params;
+    try {
+      const user = await userService.delete(id);
+      res.status(200).send("Пользователь удалён!");
+    } catch (error) {
+      next(error);
+    }
   }
 }
 module.exports = new userController();
-
-

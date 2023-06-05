@@ -5,6 +5,7 @@ const {
   User,
   Genre,
   Coauthor,
+  Playlist,
 } = require("../models/association");
 const { Op, Sequelize } = require("@sequelize/core");
 
@@ -51,7 +52,7 @@ class searchService {
           },
         },
       ],
-      order: [[Sequelize.literal("auditions DESC")]], // сортировка по убыванию количества прослушиваний
+      order: [[Sequelize.literal("auditions DESC")]],
       limit: 10,
     });
     const albums = await Album.findAll({
@@ -95,13 +96,46 @@ class searchService {
       limit: 5,
     });
     const genres = await Genre.findAll({
-      attributes: ["id", "title", "img"],
+      attributes: [
+        "id",
+        "title",
+        "img",
+        [
+          sequelize.literal(`(SELECT COUNT(*) AS total_tracks 
+        FROM tracks 
+        JOIN Albums ON tracks.albumId = Albums.id
+        JOIN AlbumGenres ON Albums.id = AlbumGenres.albumId 
+        WHERE AlbumGenres.genreId = Genres.id)`),
+          "auditions",
+        ],
+      ],
       where: {
         title: { [Op.like]: "%" + searchQuery + "%" },
       },
       limit: 5,
     });
-    return { tracks, albums, users, genres };
+    const playlists = await Playlist.findAll({
+      attributes: ["id", "title", "img"],
+      where: {
+        title: { [Op.like]: "%" + searchQuery + "%" },
+      },
+      attributes: {
+        include: [
+          [
+            sequelize.literal(
+              "(SELECT COUNT(*) FROM Auditions JOIN PlaylistsTracks ON Auditions.TrackId = PlaylistsTracks.TrackId WHERE PlaylistsTracks.PlaylistId = Playlists.id)"
+            ),
+            "auditions",
+          ],
+        ],
+      },
+      include: {
+        model: User,
+        attributes: ["id", "nickname"],
+      },
+      limit: 5,
+    });
+    return { tracks, albums, users, genres, playlists };
   }
 }
 

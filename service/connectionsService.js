@@ -1,20 +1,20 @@
 const { Subcribe, User } = require("../models/association");
+const { sequelize } = require("../db");
 
 class connectionsService {
-
   async checkSubscribe(subscriberId, userId) {
     const subscription = await Subcribe.findOne({
       where: {
         id: subscriberId,
-        userId: userId
-      }
+        userId: userId,
+      },
     });
 
     const subscription2 = await Subcribe.findOne({
       where: {
         userId: subscriberId,
-        subscriberId: userId
-      }
+        subscriberId: userId,
+      },
     });
 
     return !!subscription;
@@ -24,14 +24,14 @@ class connectionsService {
       await Subcribe.destroy({
         where: {
           subscriberId: id,
-          userId: userId
-        }
+          userId: userId,
+        },
       });
       return "Удалён";
     } else if (status === "add") {
       await Subcribe.create({
         subscriberId: id,
-        userId: userId
+        userId: userId,
       });
       return "Добавлен";
     } else {
@@ -39,39 +39,22 @@ class connectionsService {
     }
   }
   async allFriends(id) {
-    const mySubs = await Subcribe.findAll({
-      where: {
-        subscriberId: id
-      },
-      include: [{ model: User, as: "user" }],
-    });
-    const mySubUsers = mySubs.map((sub) => sub.user);
-
-    const subsToMe = await Subcribe.findAll({
-      where: {
-        userId: id
-      },
-      include: [{ model: User, as: "subscriber" }],
-    });
-    const subsToMeUsers = subsToMe.map((sub) => sub.subscriber);
-
-    const friendIds = mySubUsers
-      .filter((user) =>
-        subsToMeUsers.some((sub) => sub.id === user.id)
-      )
-      .map((user) => ({
-        id: user.id,
-        nickname: user.nickname,
-        img: user.img,
-      }));
-
-    return friendIds;
+    const friends = await sequelize.query(
+      `
+      SELECT u.nickname, u.img, u.id
+      FROM Users AS u
+      INNER JOIN Subcribes AS s1 ON u.id = s1.recipientId
+      INNER JOIN Subcribes AS s2 ON u.id = s2.senderIdId
+      WHERE s1.senderIdId = ${id} AND s2.recipientId = ${id};
+    `
+    );
+    return friends[0];
   }
 
   async allFollowers(id) {
     const mySubs = await Subcribe.findAll({
       where: {
-        userId: id
+        userId: id,
       },
       attributes: ["subscriberId"],
     });
@@ -94,7 +77,7 @@ class connectionsService {
   async allFolowing(id) {
     const mySubs = await Subcribe.findAll({
       where: {
-        subscriberId: id
+        subscriberId: id,
       },
       attributes: ["userId"],
     });
