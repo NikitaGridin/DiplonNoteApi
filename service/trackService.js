@@ -196,7 +196,7 @@ class trackService {
   }
 
   async getTracksForAuthor(part, userId) {
-    const limit = 2;
+    const limit = 10;
     const offset = (part - 1) * limit;
 
     const tracks = await Track.findAll({
@@ -360,10 +360,68 @@ class trackService {
       limit,
     });
 
-    if (!tracks) {
-      throw Object.assign(new Error("Треков нет!"), { statusCode: 400 });
+    if (!tracks.length) {
+      return {
+        error: "Треки кончились!",
+      };
     }
 
+    return tracks;
+  }
+
+  async getTrackFoCoauthor(part, userId) {
+    const limit = 10;
+    const offset = (part - 1) * limit;
+
+    const tracks = await Track.findAll({
+      where: Sequelize.literal(`
+          EXISTS (
+            SELECT 1 
+            FROM Albums 
+            WHERE Albums.id = Track.AlbumId AND Albums.status = 2
+          )
+        `),
+      attributes: [
+        "id",
+        "title",
+        "audio",
+        [
+          Sequelize.literal(
+            "(SELECT COUNT(*) FROM Auditions JOIN Tracks ON Auditions.TrackId = Tracks.id)"
+          ),
+          "auditions",
+        ],
+      ],
+      include: [
+        {
+          model: Coauthor,
+          as: "CoauthorAlias",
+          attributes: ["id"],
+          where: { UserId: userId },
+          include: {
+            model: User,
+            attributes: ["id", "nickname"],
+          },
+        },
+        {
+          model: Album,
+          attributes: ["id", "img"],
+          include: {
+            model: User,
+            attributes: ["id", "nickname"],
+          },
+        },
+      ],
+      order: [[Sequelize.literal("auditions DESC")]], // сортировка поубыванию количества прослушиваний
+      offset,
+      limit,
+    });
+
+    if (!tracks || !tracks.length) {
+      return {
+        error: "Треки кончились!",
+      };
+    }
     return tracks;
   }
 }

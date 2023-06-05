@@ -61,8 +61,12 @@ class searchService {
         "title",
         "img",
         [
-          Sequelize.literal(
-            "(SELECT COUNT(*) FROM Auditions JOIN Tracks ON Auditions.TrackId = Tracks.id WHERE Tracks.AlbumId = Album.id)"
+          sequelize.literal(
+            `(SELECT COUNT(DISTINCT Auditions.UserId)
+            FROM Auditions
+            JOIN Tracks ON Auditions.TrackId = Tracks.id
+            WHERE Tracks.AlbumId = Album.id
+            GROUP BY Tracks.AlbumId)`
           ),
           "auditions",
         ],
@@ -101,12 +105,13 @@ class searchService {
         "title",
         "img",
         [
-          sequelize.literal(`(SELECT COUNT(*) AS total_tracks 
-        FROM tracks 
-        JOIN Albums ON tracks.albumId = Albums.id
-        JOIN AlbumGenres ON Albums.id = AlbumGenres.albumId 
-        WHERE AlbumGenres.genreId = Genres.id)`),
-          "auditions",
+          sequelize.literal(`(SELECT COUNT(*) / COUNT(DISTINCT DATE_FORMAT(Auditions.date_create, '%Y-%m')) AS aver_per_month  
+        FROM Auditions
+        JOIN Tracks ON Auditions.TrackId = Tracks.id
+        JOIN Albums ON Tracks.AlbumId = Albums.id
+        JOIN AlbumGenres ON Albums.id = AlbumGenres.AlbumId
+        WHERE AlbumGenres.GenreId = Genres.id AND Albums.status = 2)`),
+          "avg_plays",
         ],
       ],
       where: {
@@ -123,7 +128,10 @@ class searchService {
         include: [
           [
             sequelize.literal(
-              "(SELECT COUNT(*) FROM Auditions JOIN PlaylistsTracks ON Auditions.TrackId = PlaylistsTracks.TrackId WHERE PlaylistsTracks.PlaylistId = Playlists.id)"
+              `(SELECT COUNT(DISTINCT Auditions.UserId)
+              FROM Auditions
+              JOIN PlaylistsTracks ON Auditions.TrackId = PlaylistsTracks.TrackId
+              WHERE PlaylistsTracks.PlaylistId = Playlists.id)`
             ),
             "auditions",
           ],

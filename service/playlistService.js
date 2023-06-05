@@ -20,7 +20,10 @@ class playlistService {
         include: [
           [
             sequelize.literal(
-              "(SELECT COUNT(*) FROM Auditions JOIN PlaylistsTracks ON Auditions.TrackId = PlaylistsTracks.TrackId WHERE PlaylistsTracks.PlaylistId = Playlists.id)"
+              `(SELECT COUNT(DISTINCT Auditions.UserId)
+              FROM Auditions
+              JOIN PlaylistsTracks ON Auditions.TrackId = PlaylistsTracks.TrackId
+              WHERE PlaylistsTracks.PlaylistId = Playlists.id)`
             ),
             "auditions",
           ],
@@ -47,7 +50,10 @@ class playlistService {
         include: [
           [
             sequelize.literal(
-              "(SELECT COUNT(*) FROM Auditions JOIN PlaylistsTracks ON Auditions.TrackId = PlaylistsTracks.TrackId WHERE PlaylistsTracks.PlaylistId = Playlists.id)"
+              `(SELECT COUNT(DISTINCT Auditions.UserId)
+              FROM Auditions
+              JOIN PlaylistsTracks ON Auditions.TrackId = PlaylistsTracks.TrackId
+              WHERE PlaylistsTracks.PlaylistId = Playlists.id)`
             ),
             "auditions",
           ],
@@ -62,6 +68,10 @@ class playlistService {
             {
               model: Coauthor,
               as: "CoauthorAlias",
+              include: {
+                model: User,
+                attributes: ["id", "nickname"],
+              },
             },
             {
               model: Album,

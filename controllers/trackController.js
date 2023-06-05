@@ -62,6 +62,15 @@ class trackController {
       next(error);
     }
   }
+  async tracksForCoauthor(req, res, next) {
+    const { part, userId } = req.params;
+    try {
+      const tracks = await trackService.getTrackFoCoauthor(part, userId);
+      res.status(200).send(tracks);
+    } catch (error) {
+      next(error);
+    }
+  }
 
   async tracksForGenre(req, res, next) {
     const { part, genreId } = req.params;

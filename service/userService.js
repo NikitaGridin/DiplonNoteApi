@@ -37,11 +37,17 @@ class userService {
             "subscribes",
           ],
           [
-            Sequelize.literal(`(SELECT COUNT(*) / COUNT(DISTINCT DATE_FORMAT(Auditions.date_create, '%Y-%m')) AS aver_per_month  
+            Sequelize.literal(`
+            (
+              SELECT COUNT(DISTINCT Auditions.UserId) AS avg_plays 
               FROM Auditions
               JOIN Tracks ON Auditions.TrackId = Tracks.id
               JOIN Albums ON Tracks.AlbumId = Albums.id
-              WHERE Albums.UserId = User.id AND Albums.status = 2)`),
+              WHERE (Albums.UserId = User.id OR Tracks.id IN (
+                SELECT Coauthors.TrackId FROM Coauthors WHERE Coauthors.UserId = User.id
+              )) AND Albums.status = 2
+            )
+          `),
             "avg_plays",
           ],
         ],

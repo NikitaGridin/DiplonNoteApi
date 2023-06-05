@@ -53,8 +53,10 @@ class librayService {
       offset,
       limit,
     });
-    if (!tracks) {
-      throw Object.assign(new Error("Треков нет!"), { statusCode: 400 });
+    if (!tracks.length) {
+      return {
+        error: "Треки кончились!",
+      };
     }
     return tracks;
   }
@@ -105,8 +107,10 @@ class librayService {
       offset,
       limit,
     });
-    if (!tracks) {
-      throw Object.assign(new Error("Треков нет!"), { statusCode: 400 });
+    if (!tracks.length) {
+      return {
+        error: "Плейлисты кончились!",
+      };
     }
     return tracks;
   }
@@ -190,8 +194,10 @@ class librayService {
       offset,
       limit,
     });
-    if (!albums) {
-      throw Object.assign(new Error("Альбомов нет!"), { statusCode: 400 });
+    if (!albums.length) {
+      return {
+        error: "Альбомы кончились!",
+      };
     }
     return albums;
   }

@@ -53,6 +53,11 @@ class albumService {
       limit: limit,
       offset: offset,
     });
+    if (!albums.length) {
+      return {
+        error: "Альбомы кончились!",
+      };
+    }
     return albums;
   }
 }

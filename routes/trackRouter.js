@@ -12,6 +12,10 @@ router.get(
   trackController.mostListenedTracksInCurrentMonth
 );
 router.get("/tracksForAuthor/:part/:userId", trackController.tracksForAuthor);
+router.get(
+  "/tracksForCoauthor/:part/:userId",
+  trackController.tracksForCoauthor
+);
 router.get("/tracksForGenre/:part/:genreId", trackController.tracksForGenre);
 router.get("/latest/:part/:userId", trackController.latest);
 

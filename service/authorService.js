@@ -25,12 +25,17 @@ class authorService {
         "nickname",
         "img",
         [
-          sequelize.literal(
-            `(SELECT COUNT(*) FROM Auditions 
-        JOIN Tracks ON Auditions.TrackId = Tracks.id 
-        JOIN Albums ON Tracks.AlbumId = Albums.id 
-        WHERE Albums.UserId = User.id AND Albums.status = 2)`
-          ),
+          Sequelize.literal(`
+            (
+              SELECT COUNT(DISTINCT Auditions.UserId) AS avg_plays 
+              FROM Auditions
+              JOIN Tracks ON Auditions.TrackId = Tracks.id
+              JOIN Albums ON Tracks.AlbumId = Albums.id
+              WHERE (Albums.UserId = User.id OR Tracks.id IN (
+                SELECT Coauthors.TrackId FROM Coauthors WHERE Coauthors.UserId = User.id
+              )) AND Albums.status = 2
+            )
+          `),
           "avg_plays",
         ],
         [
@@ -116,22 +121,29 @@ class authorService {
         "nickname",
         "img",
         [
-          sequelize.literal(`(SELECT COUNT(*) / COUNT(DISTINCT DATE_FORMAT(Auditions.date_create, '%Y-%m')) AS aver_per_month  
-            FROM Auditions
-            JOIN Tracks ON Auditions.TrackId = Tracks.id
-            JOIN Albums ON Tracks.AlbumId = Albums.id
-            WHERE Albums.UserId = User.id AND Albums.status = 2)`),
+          Sequelize.literal(`
+            (
+              SELECT COUNT(DISTINCT Auditions.UserId) AS avg_plays 
+              FROM Auditions
+              JOIN Tracks ON Auditions.TrackId = Tracks.id
+              JOIN Albums ON Tracks.AlbumId = Albums.id
+              WHERE (Albums.UserId = User.id OR Tracks.id IN (
+                SELECT Coauthors.TrackId FROM Coauthors WHERE Coauthors.UserId = User.id
+              )) AND Albums.status = 2
+                AND MONTH(Auditions.date_create) = :month
+            )
+          `),
           "avg_plays",
         ],
         [
           sequelize.literal(`
-        (SELECT Genres.title
-        FROM Albums
-        JOIN AlbumGenres ON Albums.id = AlbumGenres.AlbumId  
-        JOIN Genres ON AlbumGenres.GenreId = Genres.id
-        WHERE Albums.UserId = User.id  
-        GROUP BY Genres.id  
-        LIMIT 1)`),
+            (SELECT Genres.title
+            FROM Albums
+            JOIN AlbumGenres ON Albums.id = AlbumGenres.AlbumId  
+            JOIN Genres ON AlbumGenres.GenreId = Genres.id
+            WHERE Albums.UserId = User.id  
+            GROUP BY Genres.id  
+            LIMIT 1)`),
           "popular_genre",
         ],
       ],

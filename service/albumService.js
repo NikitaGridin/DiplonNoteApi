@@ -6,7 +6,6 @@ const {
   User,
   Genre,
   Coauthor,
-  AlbumGenre,
 } = require("../models/association");
 const fs = require("fs");
 
@@ -29,7 +28,7 @@ class albumService {
             FROM Auditions
             JOIN Tracks ON Auditions.TrackId = Tracks.id
             WHERE Tracks.AlbumId = Album.id
-            GROUP BY Auditions.UserId)`
+            GROUP BY Tracks.AlbumId)`
           ),
           "auditions",
         ],
@@ -72,7 +71,7 @@ class albumService {
             FROM Auditions
             JOIN Tracks ON Auditions.TrackId = Tracks.id
             WHERE Tracks.AlbumId = Album.id
-            GROUP BY Auditions.UserId)`
+            GROUP BY Tracks.AlbumId)`
           ),
           "auditions",
         ],
@@ -376,8 +375,10 @@ class albumService {
       limit,
     });
 
-    if (!albums || !albums.length) {
-      throw Object.assign(new Error("Альбомов нет!"), { statusCode: 400 });
+    if (!albums.length) {
+      return {
+        error: "Альбомы кончились!",
+      };
     }
 
     return albums;
