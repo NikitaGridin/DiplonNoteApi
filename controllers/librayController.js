@@ -38,6 +38,15 @@ class librayController {
     }
   }
 
+  async addedPlaylist(req, res, next) {
+    const { userId } = req.params;
+    try {
+      const tracks = await librayService.addedPlaylist(userId);
+      res.status(200).send(tracks);
+    } catch (error) {
+      next(error);
+    }
+  }
   async allPlaylist(req, res, next) {
     const { part, userId } = req.params;
     try {
@@ -48,7 +57,7 @@ class librayController {
     }
   }
   async addPlaylist(req, res, next) {
-    const { playlistId, userId } = req.body;
+    const { playlistId, userId } = req.params;
     try {
       const playlist = await librayService.addPlaylist(playlistId, userId);
       res.status(200).send("Плейлист успешно добавлен!");
@@ -57,7 +66,7 @@ class librayController {
     }
   }
   async deletePlaylist(req, res, next) {
-    const { userId, playlistId } = req.body;
+    const { userId, playlistId } = req.params;
     try {
       const deletePlaylist = await librayService.deletePlaylist(
         userId,

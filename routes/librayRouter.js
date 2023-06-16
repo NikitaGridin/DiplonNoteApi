@@ -7,8 +7,9 @@ router.get("/allTrack/:part/:userId", librayController.allTrack);
 router.post("/addTrack/:userId/:trackId", librayController.addTrack);
 router.delete("/deleteTrack/:userId/:trackId", librayController.deleteTrack);
 
+router.get("/addedPlaylist/:userId", librayController.addedPlaylist);
 router.get("/allPlaylist/:part/:userId", librayController.allPlaylist);
-router.post("/addPlaylist:userId/:playlistId", librayController.addPlaylist);
+router.post("/addPlaylist/:userId/:playlistId", librayController.addPlaylist);
 router.delete(
   "/deletePlaylist/:userId/:playlistId",
   librayController.deletePlaylist

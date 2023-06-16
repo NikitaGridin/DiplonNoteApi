@@ -109,7 +109,7 @@ class userService {
       });
     }
 
-    return updatedUser;
+    return updateFields;
   }
 
   async delete(id) {

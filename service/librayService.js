@@ -84,11 +84,23 @@ class librayService {
     const deleteTrack = await findTrack.destroy();
     return deleteTrack;
   }
+  async addedPlaylist(userId) {
+    const addedTracks = await LibrayPlaylist.findAll({
+      where: { UserId: userId },
+      include: {
+        model: Playlist,
+        attributes: ["id"],
+      },
+      attributes: [],
+    });
+    return addedTracks.map((item) => item.Playlist.id);
+  }
   async allPlaylist(part, userId) {
     const limit = part === "all" ? null : 10; // если part равен "all", то не задаем лимит
     const offset = part === "all" ? 0 : (part - 1) * limit; // если part равен "all", то смещение равно 0
-    const tracks = await Playlist.findAll({
+    const playlist = await Playlist.findAll({
       attributes: ["id", "title", "img"],
+      where: { UserId: userId },
       include: [
         {
           model: LibrayPlaylist,
@@ -107,12 +119,12 @@ class librayService {
       offset,
       limit,
     });
-    if (!tracks.length) {
-      return {
-        error: "Плейлисты кончились!",
-      };
-    }
-    return tracks;
+    // if (!playlist.length) {
+    //   return {
+    //     error: "Плейлисты кончились!",
+    //   };
+    // }
+    return playlist;
   }
   async addPlaylist(playlistId, userId) {
     const findTrack = await LibrayPlaylist.findOne({

@@ -23,7 +23,7 @@ class userController {
     const { body, file, params } = req;
     try {
       const user = await userService.update(body, params.id, file);
-      res.status(200).send("Данные успешно изменены!");
+      res.status(200).send(user);
     } catch (error) {
       if (file) {
         await fs.promises.unlink(`uploads/images/${file.filename}`);

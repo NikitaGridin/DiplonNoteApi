@@ -16,19 +16,6 @@ class playlistService {
     const limit = 4;
     const offset = (part - 1) * limit;
     const playlists = await Playlist.findAll({
-      attributes: {
-        include: [
-          [
-            sequelize.literal(
-              `(SELECT COUNT(DISTINCT Auditions.UserId)
-              FROM Auditions
-              JOIN PlaylistsTracks ON Auditions.TrackId = PlaylistsTracks.TrackId
-              WHERE PlaylistsTracks.PlaylistId = Playlists.id)`
-            ),
-            "auditions",
-          ],
-        ],
-      },
       include: {
         model: User,
         attributes: ["id", "nickname"],
@@ -46,19 +33,6 @@ class playlistService {
 
   async one(id) {
     const playlist = await Playlist.findByPk(id, {
-      attributes: {
-        include: [
-          [
-            sequelize.literal(
-              `(SELECT COUNT(DISTINCT Auditions.UserId)
-              FROM Auditions
-              JOIN PlaylistsTracks ON Auditions.TrackId = PlaylistsTracks.TrackId
-              WHERE PlaylistsTracks.PlaylistId = Playlists.id)`
-            ),
-            "auditions",
-          ],
-        ],
-      },
       include: [
         {
           model: Track,
@@ -183,6 +157,25 @@ class playlistService {
         message: "Трек удален из плейлиста",
       };
     }
+  }
+  async getPlaylistForAuthor(userId) {
+    const playlists = await Playlist.findAll({
+      attributes: ["id", "title", "img"],
+      where: { UserId: userId },
+      include: [
+        {
+          model: Track,
+          attributes: ["id"],
+          through: { attributes: [] },
+        },
+        {
+          model: User,
+          attributes: ["id", "nickname"],
+        },
+      ],
+    });
+
+    return playlists;
   }
 }
 

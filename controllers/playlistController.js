@@ -71,5 +71,14 @@ class playlistController {
       next(error);
     }
   }
+  async playlistForAuthor(req, res, next) {
+    const { userId } = req.params;
+    try {
+      const albums = await playlistService.getPlaylistForAuthor(userId);
+      res.status(200).send(albums);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 module.exports = new playlistController();

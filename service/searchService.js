@@ -105,12 +105,17 @@ class searchService {
         "title",
         "img",
         [
-          sequelize.literal(`(SELECT COUNT(*) / COUNT(DISTINCT DATE_FORMAT(Auditions.date_create, '%Y-%m')) AS aver_per_month  
-        FROM Auditions
-        JOIN Tracks ON Auditions.TrackId = Tracks.id
-        JOIN Albums ON Tracks.AlbumId = Albums.id
-        JOIN AlbumGenres ON Albums.id = AlbumGenres.AlbumId
-        WHERE AlbumGenres.GenreId = Genres.id AND Albums.status = 2)`),
+          sequelize.literal(`
+            (
+              SELECT COUNT(DISTINCT Auditions.UserId) AS avg_plays 
+              FROM Auditions
+              JOIN Tracks ON Auditions.TrackId = Tracks.id
+              JOIN Albums ON Tracks.AlbumId = Albums.id
+              JOIN AlbumGenres ON Albums.id = AlbumGenres.AlbumId
+              WHERE AlbumGenres.GenreId = Genres.id 
+                AND Albums.status = 2
+            )
+          `),
           "avg_plays",
         ],
       ],

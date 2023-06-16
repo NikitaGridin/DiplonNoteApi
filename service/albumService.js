@@ -65,6 +65,7 @@ class albumService {
         "title",
         "img",
         "type",
+        "status",
         [
           sequelize.literal(
             `(SELECT COUNT(DISTINCT Auditions.UserId)

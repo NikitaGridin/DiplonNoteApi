@@ -11,5 +11,6 @@ router.put("/update/:id", imageUpload.single("img"), playlistController.update);
 router.delete("/delete/:id", playlistController.delete);
 
 router.post("/trackInPlaylist", playlistController.trackInPlaylist);
+router.get("/playlistForAuthor/:userId", playlistController.playlistForAuthor);
 
 module.exports = router;
