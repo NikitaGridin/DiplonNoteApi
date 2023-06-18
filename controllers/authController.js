@@ -53,7 +53,10 @@ class authController {
     const { body } = req;
     try {
       const activate = await authService.activate(body);
-
+      res.cookie("refreshToken", activate.refreshToken, {
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+        httpOnly: true,
+      });
       res.status(200).send(activate);
     } catch (error) {
       next(error);

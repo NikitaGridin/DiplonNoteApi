@@ -140,7 +140,7 @@ class genreService {
   }
 
   async getMostListenedTracksInCurrentMonth(part) {
-    const limit = 2;
+    const limit = 10;
     const offset = (part - 1) * limit;
 
     const month = new Date().getMonth() + 1;

@@ -78,9 +78,14 @@ class authService {
       }
 
       if (user.isActivation === false) {
-        throw Object.assign(new Error("Аккаунт не активирован!"), {
-          statusCode: 400,
-        });
+        throw Object.assign(
+          new Error(
+            "Аккаунт не активирован, ранее на вашу почту был отправлен код активации!"
+          ),
+          {
+            statusCode: 400,
+          }
+        );
       }
 
       const payload = new UserDto(user);
@@ -102,11 +107,13 @@ class authService {
     try {
       const { code } = body;
 
+      if (!code) {
+        throw Object.assign(new Error(`Введите код!`), { statusCode: 404 });
+      }
       const activationCode = parseInt(code);
       const user = await User.findOne({
         where: { activationCode: activationCode },
       });
-
       if (!user) {
         throw Object.assign(new Error(`Код неверный!`), { statusCode: 404 });
       }

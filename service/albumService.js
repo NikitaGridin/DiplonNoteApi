@@ -248,7 +248,7 @@ class albumService {
   }
 
   async getMostListenedAlbumsInCurrentMonth(part) {
-    let limit = 1;
+    let limit = 10;
     let offset = (part - 1) * limit;
 
     let total = part * limit;
@@ -289,56 +289,41 @@ class albumService {
   }
 
   async getAlbumsForAuthor(part, userId) {
-    const limit = 2;
-    const offset = (part - 1) * limit;
+    let limit = 1;
+    let offset = (part - 1) * limit;
 
-    const albums = await Album.findAll({
-      attributes: [
-        "id",
-        "title",
-        "img",
-        [
-          Sequelize.literal(
-            "(SELECT COUNT(*) FROM Auditions JOIN Tracks ON Auditions.TrackId = Tracks.id WHERE Tracks.AlbumId = Album.id)"
-          ),
-          "auditions",
-        ],
-      ],
-      where: { status: 2 },
-      include: [
-        {
-          model: Track,
-          attributes: ["id", "title", "audio"],
-          include: [
-            {
-              model: Coauthor,
-              as: "CoauthorAlias",
-              attributes: ["id"],
-              include: {
-                model: User,
-                attributes: ["id", "nickname"],
-              },
-            },
-          ],
-        },
-        {
-          model: User,
-          where: {
-            id: userId,
-          },
-          attributes: ["id", "nickname"],
-        },
-      ],
-      order: [[Sequelize.literal("auditions DESC")]], // сортировка поубыванию количества прослушиваний
-      offset,
-      limit,
-    });
+    let total = part * limit;
+
+    // if (total > 40) {
+    //   return {
+    //     error: "Limit exceeds maximum (3)",
+    //   };
+    // }
+
+    const albums = await sequelize.query(
+      `SELECT Albums.*, 
+      COUNT(DISTINCT Auditions.userId) AS auditions,
+      Users.nickname AS author  
+   FROM Auditions
+   JOIN Tracks ON Auditions.TrackId = Tracks.id   
+   JOIN Albums ON Tracks.AlbumId = Albums.id
+   JOIN Users ON Albums.userId = Users.id 
+   WHERE Albums.UserId = :userId
+   GROUP BY Albums.id  
+   ORDER BY auditions DESC
+   LIMIT :limit OFFSET :offset`,
+      {
+        replacements: { userId, limit, offset },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
 
     if (!albums.length) {
       return {
         error: "Альбомы кончились!",
       };
     }
+
     return albums;
   }
 

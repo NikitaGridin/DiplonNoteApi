@@ -100,7 +100,7 @@ class librayService {
     const offset = part === "all" ? 0 : (part - 1) * limit; // если part равен "all", то смещение равно 0
     const playlist = await Playlist.findAll({
       attributes: ["id", "title", "img"],
-      where: { UserId: userId },
+      // where: { UserId: userId },
       include: [
         {
           model: LibrayPlaylist,
@@ -119,11 +119,11 @@ class librayService {
       offset,
       limit,
     });
-    // if (!playlist.length) {
-    //   return {
-    //     error: "Плейлисты кончились!",
-    //   };
-    // }
+    if (!playlist.length) {
+      return {
+        error: "Плейлисты кончились!",
+      };
+    }
     return playlist;
   }
   async addPlaylist(playlistId, userId) {

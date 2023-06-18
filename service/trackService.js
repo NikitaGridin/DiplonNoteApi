@@ -13,7 +13,7 @@ const fs = require("fs");
 
 class trackService {
   async all(part) {
-    const limit = 2;
+    const limit = 10;
     const offset = (part - 1) * limit;
 
     const tracks = await Track.findAll({
@@ -134,7 +134,7 @@ class trackService {
   }
 
   async getMostListenedTracksInCurrentMonth(part) {
-    let limit = 4;
+    let limit = 10;
     const offset = (part - 1) * limit;
 
     let total = part * limit;
@@ -255,7 +255,7 @@ class trackService {
   }
 
   async getTracksForGenre(part, genreId) {
-    const limit = 20;
+    const limit = 10;
     const offset = (part - 1) * limit;
 
     const tracks = await Track.findAll({
